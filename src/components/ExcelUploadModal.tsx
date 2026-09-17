@@ -3,7 +3,7 @@ import { useState, useCallback, useRef } from 'react';
 import * as XLSX from 'xlsx-js-style';
 import { X, Upload, FileSpreadsheet, CheckCircle2, AlertCircle, Table, Plus } from 'lucide-react';
 import { ScheduleItem, ItemType, ItemStatus, ItemPriority, SDLCMethodology, DEFAULT_WATERFALL_PHASES, DEFAULT_AGILE_PHASES } from '@/lib/types';
-import { generateId, todayISOString, daysFromNow, distributeItemsAcrossRange } from '@/lib/utils';
+import { generateId, todayISOString, daysFromNow } from '@/lib/utils';
 
 interface ExcelUploadModalProps {
   onImport: (items: ScheduleItem[]) => void;
@@ -201,17 +201,13 @@ export default function ExcelUploadModal({ onImport, onClose, projectMethodology
     const phases = projectMethodology === 'agile' ? DEFAULT_AGILE_PHASES : DEFAULT_WATERFALL_PHASES;
     const selectedParsed = parsedItems.filter((_, i) => selectedRows.has(i));
 
-    // Auto-distribute dates for items that are missing start/end date
-    const needsAutoDates = selectedParsed.some(p => !p.startDate || p.startDate === todayISOString());
-    const autoDates = needsAutoDates
-      ? distributeItemsAcrossRange(selectedParsed, projectStartDate, projectEndDate)
-      : null;
-
-    const items: ScheduleItem[] = selectedParsed.map((p, i) => {
+    const items: ScheduleItem[] = selectedParsed.map((p) => {
       const hasStart = p.startDate && p.startDate !== todayISOString();
       const hasEnd   = p.endDate && p.endDate !== todayISOString() && p.endDate > p.startDate;
-      const start = hasStart ? p.startDate : (autoDates ? autoDates[i].startDate : projectStartDate);
-      const end   = hasEnd   ? p.endDate   : (autoDates ? autoDates[i].endDate   : projectEndDate);
+      // Items without explicit dates span the full project timeline so SDLC phases
+      // display proportionally across the entire programme duration
+      const start = hasStart ? p.startDate : projectStartDate;
+      const end   = hasEnd   ? p.endDate   : projectEndDate;
       return {
         id: generateId(),
         name: p.name,
@@ -416,7 +412,7 @@ export default function ExcelUploadModal({ onImport, onClose, projectMethodology
               </div>
 
               <p className="text-xs text-gray-400 mt-2">
-                Dates are optional — items without dates will be auto-distributed evenly across the project timeline ({projectStartDate} → {projectEndDate}).
+                Dates are optional — items without dates will span the full project timeline ({projectStartDate} → {projectEndDate}), with SDLC phases shown proportionally across each bar.
                 Phase weights are set to project defaults. You can edit individual items after import.
               </p>
             </div>
