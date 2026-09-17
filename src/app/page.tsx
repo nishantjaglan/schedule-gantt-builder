@@ -1,69 +1,204 @@
-import Image from "next/image";
+'use client';
+import { useState, useCallback } from 'react';
+import { Project, ScheduleItem, SDLCMethodology, DEFAULT_WATERFALL_PHASES, DEFAULT_AGILE_PHASES } from '@/lib/types';
+import { SAMPLE_PROJECT } from '@/lib/sampleData';
+import { exportToExcel } from '@/lib/excelExport';
+import { generateId } from '@/lib/utils';
+import Header from '@/components/Header';
+import ScheduleTable from '@/components/ScheduleTable';
+import ScheduleForm from '@/components/ScheduleForm';
+import GanttChart from '@/components/GanttChart';
+import AIAssistant from '@/components/AIAssistant';
+import SettingsModal from '@/components/SettingsModal';
+import ExcelUploadModal from '@/components/ExcelUploadModal';
 
 export default function Home() {
+  const [project, setProject] = useState<Project>(SAMPLE_PROJECT);
+  const [activeTab, setActiveTab] = useState<'schedule' | 'gantt' | 'ai'>('gantt');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ScheduleItem | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const [aiApiKey, setAiApiKey] = useState('');
+  const [aiEnabled, setAiEnabled] = useState(false);
+
+  const handleAddItem = useCallback(() => {
+    setEditingItem(null);
+    setIsFormOpen(true);
+  }, []);
+
+  const handleEditItem = useCallback((item: ScheduleItem) => {
+    setEditingItem(item);
+    setIsFormOpen(true);
+  }, []);
+
+  const handleSaveItem = useCallback((item: ScheduleItem) => {
+    setProject(p => {
+      const exists = p.items.some(i => i.id === item.id);
+      const items = exists
+        ? p.items.map(i => i.id === item.id ? item : i)
+        : [...p.items, item];
+      return { ...p, items, updatedAt: new Date().toISOString() };
+    });
+    setIsFormOpen(false);
+    setEditingItem(null);
+  }, []);
+
+  const handleDeleteItem = useCallback((id: string) => {
+    setProject(p => ({
+      ...p,
+      items: p.items.filter(i => i.id !== id),
+      updatedAt: new Date().toISOString(),
+    }));
+  }, []);
+
+  const handleDuplicateItem = useCallback((item: ScheduleItem) => {
+    const duplicate: ScheduleItem = {
+      ...item,
+      id: generateId(),
+      name: `${item.name} (Copy)`,
+      status: 'Not Started',
+      completionPct: 0,
+    };
+    setProject(p => ({ ...p, items: [...p.items, duplicate] }));
+  }, []);
+
+  const handleAddAIItems = useCallback((items: ScheduleItem[]) => {
+    setProject(p => ({
+      ...p,
+      items: [...p.items, ...items],
+      updatedAt: new Date().toISOString(),
+    }));
+    setActiveTab('gantt');
+  }, []);
+
+  const handleImportItems = useCallback((items: ScheduleItem[]) => {
+    setProject(p => ({
+      ...p,
+      items: [...p.items, ...items],
+      updatedAt: new Date().toISOString(),
+    }));
+    setActiveTab('gantt');
+  }, []);
+
+  const handleExport = useCallback(() => {
+    exportToExcel(project);
+  }, [project]);
+
+  const handleSaveSettings = useCallback((updated: Project) => {
+    setProject(updated);
+  }, []);
+
+  const handleSaveAI = useCallback((key: string, enabled: boolean) => {
+    setAiApiKey(key);
+    setAiEnabled(enabled);
+  }, []);
+
+  const handleProjectNameChange = useCallback((name: string) => {
+    setProject(p => ({ ...p, name, updatedAt: new Date().toISOString() }));
+  }, []);
+
+  const handleMethodologyChange = useCallback((methodology: SDLCMethodology) => {
+    const defaults = methodology === 'agile' ? DEFAULT_AGILE_PHASES : DEFAULT_WATERFALL_PHASES;
+    setProject(p => ({
+      ...p,
+      methodology,
+      phaseWeights: { ...defaults },
+      updatedAt: new Date().toISOString(),
+    }));
+  }, []);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+    <div className="flex flex-col h-screen overflow-hidden" style={{ background: 'var(--fiscal-bg)' }}>
+      <Header
+        project={project}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onExport={handleExport}
+        onSettingsOpen={() => setIsSettingsOpen(true)}
+        onUploadOpen={() => setIsUploadOpen(true)}
+        onProjectNameChange={handleProjectNameChange}
+        onMethodologyChange={handleMethodologyChange}
+        aiEnabled={aiEnabled}
+      />
+
+      <main className="flex-1 overflow-hidden">
+        {activeTab === 'schedule' && (
+          <div className="h-full bg-white shadow-sm">
+            <ScheduleTable
+              items={project.items}
+              onAdd={handleAddItem}
+              onEdit={handleEditItem}
+              onDelete={handleDeleteItem}
+              onDuplicate={handleDuplicateItem}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          </div>
+        )}
+
+        {activeTab === 'gantt' && (
+          <div className="h-full bg-white shadow-sm">
+            <GanttChart
+              project={project}
+              items={project.items}
+              onAdd={handleAddItem}
+              onEdit={handleEditItem}
+              onDelete={handleDeleteItem}
+            />
+          </div>
+        )}
+
+        {activeTab === 'ai' && (
+          <div className="h-full">
+            <AIAssistant
+              apiKey={aiApiKey}
+              onApiKeyChange={setAiApiKey}
+              projectName={project.name}
+              projectDescription={project.description || ''}
+              items={project.items}
+              onAddItems={handleAddAIItems}
+            />
+          </div>
+        )}
       </main>
+
+      <footer className="px-4 py-1.5 text-xs text-center border-t border-gray-200 bg-white"
+        style={{ color: 'var(--fiscal-text-muted)' }}>
+        <span style={{ color: 'var(--fiscal-navy)' }} className="font-semibold">{project.name || 'My Project'}</span>
+        {' '}·{' '}{project.methodology.charAt(0).toUpperCase() + project.methodology.slice(1)}
+        {' '}·{' '}{project.items.length} items
+        {project.client && <> · {project.client}</>}
+      </footer>
+
+      {isFormOpen && (
+        <ScheduleForm
+          item={editingItem}
+          onSave={handleSaveItem}
+          onClose={() => { setIsFormOpen(false); setEditingItem(null); }}
+          defaultMethodology={project.methodology}
+          defaultPhaseWeights={project.phaseWeights}
+        />
+      )}
+
+      {isSettingsOpen && (
+        <SettingsModal
+          project={project}
+          aiApiKey={aiApiKey}
+          aiEnabled={aiEnabled}
+          onSaveProject={handleSaveSettings}
+          onSaveAI={handleSaveAI}
+          onClose={() => setIsSettingsOpen(false)}
+        />
+      )}
+
+      {isUploadOpen && (
+        <ExcelUploadModal
+          onImport={handleImportItems}
+          onClose={() => setIsUploadOpen(false)}
+          projectMethodology={project.methodology}
+          projectStartDate={project.startDate}
+          projectEndDate={project.endDate}
+        />
+      )}
     </div>
   );
 }
