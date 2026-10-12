@@ -2,8 +2,9 @@
 import { useState, useRef, useEffect } from 'react';
 import {
   Settings, FileSpreadsheet, Menu, X, BarChart2, Calendar, Bot,
-  Upload, Pencil, Check,
+  Upload, Pencil, Check, LogOut,
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Project, SDLCMethodology } from '@/lib/types';
 
 interface HeaderProps {
@@ -28,10 +29,16 @@ export default function Header({
   project, activeTab, onTabChange, onExport, onSettingsOpen,
   onUploadOpen, onProjectNameChange, onMethodologyChange, aiEnabled,
 }: HeaderProps) {
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameValue, setNameValue] = useState(project.name);
   const nameInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+  }
 
   useEffect(() => { setNameValue(project.name); }, [project.name]);
   useEffect(() => { if (editingName) nameInputRef.current?.focus(); }, [editingName]);
@@ -211,6 +218,13 @@ export default function Header({
               <Settings size={18} />
             </button>
             <button
+              onClick={handleLogout}
+              className="p-2 rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+              title="Sign out"
+            >
+              <LogOut size={18} />
+            </button>
+            <button
               className="md:hidden p-2 rounded-md text-gray-500 hover:bg-gray-100"
               onClick={() => setMobileOpen(!mobileOpen)}
             >
@@ -276,6 +290,12 @@ export default function Header({
               style={{ background: 'var(--fiscal-gold)' }}
             >
               <FileSpreadsheet size={16} />Export to Excel
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex w-full items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium text-red-600 bg-red-50 mt-1"
+            >
+              <LogOut size={16} />Sign Out
             </button>
           </div>
         )}
