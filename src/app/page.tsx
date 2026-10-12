@@ -163,7 +163,11 @@ export default function Home() {
 
       <footer className="px-4 py-1.5 text-xs text-center border-t border-gray-200 bg-white"
         style={{ color: 'var(--fiscal-text-muted)' }}>
-        <span style={{ color: 'var(--fiscal-navy)' }} className="font-semibold">{project.name || 'My Project'}</span>
+        <span className="font-black" style={{ color: '#A100FF' }}>&gt;</span>
+        {' '}
+        <span className="font-semibold text-black">Accenture</span>
+        {' '}·{' '}
+        <span className="font-semibold" style={{ color: 'var(--fiscal-navy)' }}>{project.name || 'My Project'}</span>
         {' '}·{' '}{project.methodology.charAt(0).toUpperCase() + project.methodology.slice(1)}
         {' '}·{' '}{project.items.length} items
         {project.client && <> · {project.client}</>}

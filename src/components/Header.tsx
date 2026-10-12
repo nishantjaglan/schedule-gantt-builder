@@ -35,11 +35,6 @@ export default function Header({
   const [nameValue, setNameValue] = useState(project.name);
   const nameInputRef = useRef<HTMLInputElement>(null);
 
-  async function handleLogout() {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
-  }
-
   useEffect(() => { setNameValue(project.name); }, [project.name]);
   useEffect(() => { if (editingName) nameInputRef.current?.focus(); }, [editingName]);
 
@@ -48,6 +43,11 @@ export default function Header({
     setNameValue(trimmed);
     onProjectNameChange(trimmed);
     setEditingName(false);
+  }
+
+  async function handleLogout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
   }
 
   const tabs = [
@@ -59,20 +59,18 @@ export default function Header({
   return (
     <header className="w-full">
 
-      {/* ── Top utility bar (FISCal blue) ── */}
+      {/* ── Top utility bar — Accenture black ── */}
       <div className="flex items-center justify-between px-4 py-1.5 text-xs text-white"
-        style={{ background: 'var(--fiscal-utility)' }}>
+        style={{ background: '#1a1a1a' }}>
         <span className="flex items-center gap-2">
-          {/* CA state circular logo */}
-          <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white/20 font-bold text-[10px] tracking-tight border border-white/30">
-            CA
-          </span>
-          <span className="hidden sm:inline opacity-80">State of California</span>
-          <span className="hidden sm:inline opacity-40 mx-0.5">|</span>
-          <a href="https://ca.gov" target="_blank" rel="noopener noreferrer"
-            className="hidden sm:inline hover:underline opacity-80 hover:opacity-100">ca.gov</a>
+          {/* Accenture ">" mark */}
+          <span className="font-black text-sm leading-none" style={{ color: '#A100FF' }}>&gt;</span>
+          <span className="opacity-70 hidden sm:inline">Accenture</span>
+          <span className="opacity-30 mx-0.5 hidden sm:inline">|</span>
+          <a href="https://accenture.com" target="_blank" rel="noopener noreferrer"
+            className="hidden sm:inline hover:underline opacity-60 hover:opacity-90">accenture.com</a>
         </span>
-        <span className="font-medium tracking-wide opacity-90 hidden sm:block">
+        <span className="font-medium opacity-80 hidden sm:block tracking-wide text-[11px]">
           FI$Cal Programme Management Office
         </span>
       </div>
@@ -81,27 +79,16 @@ export default function Header({
       <div className="bg-white border-b border-gray-200 shadow-sm">
         <div className="flex items-center gap-3 px-4 py-2.5 sm:px-6">
 
-          {/* Logo — FI$Cal style */}
+          {/* Logo — Accenture style */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Bear seal */}
-            <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
-              style={{ background: 'var(--fiscal-utility)' }}>
-              <svg viewBox="0 0 40 40" width="36" height="36" xmlns="http://www.w3.org/2000/svg">
-                <g fill="white">
-                  <ellipse cx="20" cy="25" rx="8" ry="7"/>
-                  <circle cx="20" cy="15.5" r="5.5"/>
-                  <circle cx="15.5" cy="11.5" r="2.5"/>
-                  <circle cx="24.5" cy="11.5" r="2.5"/>
-                  <ellipse cx="20" cy="17.5" rx="3" ry="2"/>
-                  <rect x="12" y="28" width="3" height="5" rx="1.5"/>
-                  <rect x="25" y="28" width="3" height="5" rx="1.5"/>
-                </g>
-                <text x="20" y="7" textAnchor="middle" fontSize="5" fill="#FFD700" fontFamily="serif">★</text>
-              </svg>
+            {/* Accenture logo mark */}
+            <div className="w-10 h-10 rounded flex items-center justify-center shrink-0"
+              style={{ background: '#1a1a1a' }}>
+              <span className="font-black text-2xl leading-none" style={{ color: '#A100FF' }}>&gt;</span>
             </div>
             <div className="hidden sm:block">
-              <div className="text-xl font-black tracking-tight leading-none">
-                <span style={{ color: 'var(--fiscal-gold)' }}>FI$</span><span style={{ color: 'var(--fiscal-navy)' }}>Cal</span>
+              <div className="text-lg font-black tracking-tight leading-none">
+                <span className="text-black">Accenture</span>
               </div>
               <div className="text-[11px] text-gray-400 leading-none mt-0.5 font-medium">
                 Schedule &amp; Gantt Builder
@@ -126,7 +113,7 @@ export default function Header({
                     if (e.key === 'Enter') commitName();
                     if (e.key === 'Escape') { setNameValue(project.name); setEditingName(false); }
                   }}
-                  className="flex-1 px-2 py-1 rounded text-sm font-semibold text-gray-800 bg-gray-50 border border-blue-300 outline-none ring-2 ring-blue-100 min-w-0"
+                  className="flex-1 px-2 py-1 rounded text-sm font-semibold text-gray-800 bg-gray-50 border border-purple-300 outline-none ring-2 ring-purple-100 min-w-0"
                   placeholder="Project name..."
                 />
                 <button onClick={commitName} className="p-1 rounded text-green-600 hover:bg-green-50">
@@ -162,7 +149,7 @@ export default function Header({
                     ? 'text-white shadow-sm'
                     : 'text-gray-500 hover:text-gray-800 hover:bg-white'
                 }`}
-                style={project.methodology === opt.value ? { background: 'var(--fiscal-navy)' } : {}}
+                style={project.methodology === opt.value ? { background: '#1a1a1a' } : {}}
               >
                 {opt.short}
               </button>
@@ -183,7 +170,7 @@ export default function Header({
                       ? 'text-white shadow-sm'
                       : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                   }`}
-                  style={isActive ? { background: 'var(--fiscal-navy)' } : {}}
+                  style={isActive ? { background: '#1a1a1a' } : {}}
                 >
                   <Icon size={14} />
                   {tab.label}
@@ -205,7 +192,7 @@ export default function Header({
             <button
               onClick={onExport}
               className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-semibold text-white shadow-sm transition-all hover:opacity-90 active:scale-95"
-              style={{ background: 'var(--fiscal-gold)' }}
+              style={{ background: '#A100FF' }}
             >
               <FileSpreadsheet size={14} />
               <span className="hidden lg:inline">Export Excel</span>
@@ -257,7 +244,7 @@ export default function Header({
                       ? 'text-white'
                       : 'text-gray-600 bg-gray-100'
                   }`}
-                  style={project.methodology === opt.value ? { background: 'var(--fiscal-navy)' } : {}}
+                  style={project.methodology === opt.value ? { background: '#1a1a1a' } : {}}
                 >
                   {opt.short}
                 </button>
@@ -272,7 +259,7 @@ export default function Header({
                   className={`flex w-full items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all ${
                     activeTab === tab.id ? 'text-white' : 'text-gray-700 hover:bg-gray-100'
                   }`}
-                  style={activeTab === tab.id ? { background: 'var(--fiscal-navy)' } : {}}
+                  style={activeTab === tab.id ? { background: '#1a1a1a' } : {}}
                 >
                   <Icon size={16} />{tab.label}
                 </button>
@@ -287,7 +274,7 @@ export default function Header({
             <button
               onClick={() => { onExport(); setMobileOpen(false); }}
               className="flex w-full items-center gap-3 px-3 py-2.5 rounded-md text-sm font-semibold text-white"
-              style={{ background: 'var(--fiscal-gold)' }}
+              style={{ background: '#A100FF' }}
             >
               <FileSpreadsheet size={16} />Export to Excel
             </button>
